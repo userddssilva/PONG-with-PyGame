@@ -5,11 +5,11 @@ pygame.init()
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 
-SCORE_MAX = 2
+SCORE_MAX = 5
 
 size = (1280, 720)
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption("MyPong - PyGame Edition - 2021.01.30")
+pygame.display.set_caption("MyPong - PyGame Edition - 2021.05.18")
 
 # score text
 score_font = pygame.font.Font('assets/PressStart2P.ttf', 44)
@@ -78,28 +78,40 @@ while game_loop:
 
         # ball collision with the wall
         if ball_y > 700:
-            ball_dy *= -1
+            ball_dy *= -1.0009
             bounce_sound_effect.play()
         elif ball_y <= 0:
-            ball_dy *= -1
+            ball_dy *= -1.0009
             bounce_sound_effect.play()
 
         # ball collision with the player 1 's paddle
         if ball_x < 100:
             if player_1_y < ball_y + 25:
                 if player_1_y + 150 > ball_y:
-                    ball_dx *= -1
+                    ball_x = 102
+                    ball_dx *= -1.1
                     bounce_sound_effect.play()
 
         # ball collision with the player 2 's paddle
-        if ball_x > 1160:
+        if (ball_x > 1160) and not (ball_x > 1190):
             if player_2_y < ball_y + 25:
                 if player_2_y + 150 > ball_y:
-                    ball_dx *= -1
-                    bounce_sound_effect.play()
+                    ball_dx *= -1.1
+                    ball_x = 1140
+
+            bounce_sound_effect.play()
+
+        if ball_dx >= 20:
+            ball_dx = 20
+        elif ball_dx <= -20:
+            ball_dx = -20
 
         # scoring points
         if ball_x < -50:
+            if ball_dx < 5:
+                ball_dx = -5
+            else:
+                ball_dx = 5
             ball_x = 640
             ball_y = 360
             ball_dy *= -1
@@ -107,6 +119,10 @@ while game_loop:
             score_2 += 1
             scoring_sound_effect.play()
         elif ball_x > 1320:
+            if ball_dx < 5:
+                ball_dx = -5
+            else:
+                ball_dx = 5
             ball_x = 640
             ball_y = 360
             ball_dy *= -1
@@ -139,7 +155,11 @@ while game_loop:
             player_1_y = 570
 
         # player 2 "Artificial Intelligence"
-        player_2_y = ball_y
+        if player_2_y > ball_y:
+            player_2_y -= 4.8
+        elif player_2_y < ball_y:
+            player_2_y += 4.8
+
         if player_2_y <= 0:
             player_2_y = 0
         elif player_2_y >= 570:
