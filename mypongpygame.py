@@ -1,12 +1,12 @@
+import random
 import pygame
-
 pygame.init()
 
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 
+# display Config
 SCORE_MAX = 5
-
 size = (1280, 720)
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("MyPong - PyGame Edition - 2021.05.18")
@@ -25,17 +25,28 @@ victory_text_rect.center = (450, 350)
 
 # sound effects
 bounce_sound_effect = pygame.mixer.Sound('assets/bounce.wav')
-scoring_sound_effect = pygame.mixer.Sound('assets/258020__kodack__arcade-bleep-sound.wav')
+scoring_sound_effect = pygame.mixer.Sound('assets/point.wav')
+buff_sound_effect = pygame.mixer.Sound('assets/coin.wav')
+nerf_sound_effect = pygame.mixer.Sound('assets/loose.wav')
 
 # player 1
 player_1 = pygame.image.load("assets/player.png")
 player_1_y = 300
 player_1_move_up = False
 player_1_move_down = False
+player_1_size = 150
 
 # player 2 - robot
 player_2 = pygame.image.load("assets/player.png")
 player_2_y = 300
+player_2_size = 150
+
+# Lucky Block
+spawn_locked = True
+last_touch = 0
+lucky_block = pygame.image.load("assets/lucky_block.gif")
+lucky_block_x = 0
+lucky_block_y = 0
 
 # ball
 ball = pygame.image.load("assets/ball.png")
@@ -53,7 +64,18 @@ game_loop = True
 game_clock = pygame.time.Clock()
 
 while game_loop:
+    # lucky_Block Spawn
+    buffTry = random.randint(0, 800)
+    if buffTry == 150 and spawn_locked and not (last_touch == 0):
+        # Select the buff
+        buffX = random.randint(200, 1080)
+        buffY = random.randint(100, 620)
+        lucky_block_x = buffX
+        lucky_block_y = buffY
+        spawn_locked = False
+        print("Spawn")
 
+    # Movement
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_loop = False
@@ -84,20 +106,38 @@ while game_loop:
             ball_dy *= -1.0009
             bounce_sound_effect.play()
 
+        # collision with buff
+        if (ball_x + 40 >= lucky_block_x >= ball_x - 40) and \
+                (ball_y + 40 >= lucky_block_y >= ball_y - 40):
+            spawn_locked = True
+            lucky_block_x = -110
+            lucky_block_y = -110
+            rand_buff = random.randint(0, 1)
+            if rand_buff == 0 or rand_buff == 1:
+                if rand_buff == 0:
+                    buff_sound_effect.play()
+                    # Add The  Function
+                    # Needed the sprite 20 x 200
+                else:
+                    nerf_sound_effect.play()
+                    # Add The  Function
+                    # Needed the sprite 20 x 80
         # ball collision with the player 1 's paddle
-        if ball_x < 100:
+        if ball_x < 100 and not (ball_x < 80):
             if player_1_y < ball_y + 25:
                 if player_1_y + 150 > ball_y:
                     ball_x = 102
                     ball_dx *= -1.1
                     bounce_sound_effect.play()
+                    last_touch = 1
 
         # ball collision with the player 2 's paddle
         if (ball_x > 1160) and not (ball_x > 1190):
             if player_2_y < ball_y + 25:
                 if player_2_y + 150 > ball_y:
                     ball_dx *= -1.1
-                    ball_x = 1140
+                    ball_x = 1158
+                    last_touch = 2
 
             bounce_sound_effect.play()
 
@@ -169,10 +209,14 @@ while game_loop:
         score_text = score_font.render(str(score_1) + ' x ' + str(score_2), True, COLOR_WHITE, COLOR_BLACK)
 
         # drawing objects
-        screen.blit(ball, (ball_x, ball_y))
-        screen.blit(player_1, (50, player_1_y))
-        screen.blit(player_2, (1180, player_2_y))
         screen.blit(score_text, score_text_rect)
+        screen.blit(ball, (ball_x, ball_y))
+        screen.blit(player_1, (80, player_1_y))
+        screen.blit(player_2, (1180, player_2_y))
+
+        if not spawn_locked:
+            screen.blit(lucky_block, (lucky_block_x, lucky_block_y))
+
     else:
         # drawing victory
         screen.fill(COLOR_BLACK)
