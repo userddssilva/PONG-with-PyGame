@@ -23,6 +23,13 @@ victory_text = victory_font .render('VICTORY', True, COLOR_WHITE, COLOR_BLACK)
 victory_text_rect = score_text.get_rect()
 victory_text_rect.center = (450, 350)
 
+# Menu text
+menu_font = pygame.font.Font('assets/PressStart2P.ttf', 60)
+menu_text = menu_font .render('Press SPACE', True, COLOR_WHITE, COLOR_BLACK)
+menu_text_rect = score_text.get_rect()
+menu_text_rect.center = (450, 350)
+
+
 # sound effects
 bounce_sound_effect = pygame.mixer.Sound('assets/bounce.wav')
 scoring_sound_effect = pygame.mixer.Sound('assets/point.wav')
@@ -47,6 +54,10 @@ last_touch = 0
 lucky_block = pygame.image.load("assets/lucky_block.gif")
 lucky_block_x = 0
 lucky_block_y = 0
+buff_timer_player1 = 0
+buff_timer_player2 = 0
+nerf_timer_player1 = 0
+nerf_timer_player2 = 0
 
 # ball
 ball = pygame.image.load("assets/ball.png")
@@ -61,9 +72,24 @@ score_2 = 0
 
 # game loop
 game_loop = True
+game_pause = True
 game_clock = pygame.time.Clock()
 
+
+# End Buff
+def end_buff(num_paddle):
+    global player_1_size
+    global player_2_size
+    if num_paddle == 1:
+        player_1_size = 150
+    else:
+        # Change sprite
+        player_2_size = 150
+    return pygame.image.load("assets/player.png")
+
+
 while game_loop:
+
     # lucky_Block Spawn
     buffTry = random.randint(0, 800)
     if buffTry == 150 and spawn_locked and not (last_touch == 0):
@@ -73,7 +99,30 @@ while game_loop:
         lucky_block_x = buffX
         lucky_block_y = buffY
         spawn_locked = False
-        print("Spawn")
+
+    # timer buff paddle 1
+    buff_timer_player1 -= 0.0009
+    if buff_timer_player1 < 0:
+        buff_timer_player1 = 1
+        player_1 = end_buff(1)
+
+    # timer buff paddle 2
+    buff_timer_player2 -= 0.0009
+    if buff_timer_player2 < 0:
+        buff_timer_player2 = 1
+        player_2 = end_buff(2)
+
+    # time nerf paddle 1
+    nerf_timer_player1 -= 0.0009
+    if nerf_timer_player1 < 0:
+        nerf_timer_player1 = 1
+        player_1 = end_buff(1)
+
+    # timer nerf paddle 2
+    nerf_timer_player2 -= 0.0009
+    if nerf_timer_player2 < 0:
+        nerf_timer_player2 = 1
+        player_2 = end_buff(2)
 
     # Movement
     for event in pygame.event.get():
@@ -86,6 +135,8 @@ while game_loop:
                 player_1_move_up = True
             if event.key == pygame.K_DOWN:
                 player_1_move_down = True
+            if event.key == pygame.K_SPACE:
+                game_pause = False
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
                 player_1_move_up = False
@@ -116,16 +167,30 @@ while game_loop:
             if rand_buff == 0 or rand_buff == 1:
                 if rand_buff == 0:
                     buff_sound_effect.play()
-                    # Add The  Function
-                    # Needed the sprite 20 x 200
+                    if last_touch == 1:
+                        player_1_size = 200
+                        player_1 = pygame.image.load("assets/player_buff.png")
+                        buff_timer_player1 = 30
+                    else:
+                        player_2_size = 200
+                        player_2 = pygame.image.load("assets/player_buff.png")
+                        buff_timer_player2 = 30
+
                 else:
                     nerf_sound_effect.play()
-                    # Add The  Function
-                    # Needed the sprite 20 x 80
+                    if last_touch == 1:
+                        player_1_size = 90
+                        player_1 = pygame.image.load("assets/player_nerf.png")
+                        nerf_timer_player1 = 30
+                    else:
+                        player_2_size = 90
+                        player_2 = pygame.image.load("assets/player_nerf.png")
+                        nerf_timer_player2 = 30
+
         # ball collision with the player 1 's paddle
         if ball_x < 100 and not (ball_x < 80):
             if player_1_y < ball_y + 25:
-                if player_1_y + 150 > ball_y:
+                if player_1_y + player_1_size > ball_y:
                     ball_x = 102
                     ball_dx *= -1.1
                     bounce_sound_effect.play()
@@ -134,7 +199,7 @@ while game_loop:
         # ball collision with the player 2 's paddle
         if (ball_x > 1160) and not (ball_x > 1190):
             if player_2_y < ball_y + 25:
-                if player_2_y + 150 > ball_y:
+                if player_2_y + player_2_size > ball_y:
                     ball_dx *= -1.1
                     ball_x = 1158
                     last_touch = 2
@@ -170,52 +235,59 @@ while game_loop:
             score_1 += 1
             scoring_sound_effect.play()
 
-        # ball movement
-        ball_x = ball_x + ball_dx
-        ball_y = ball_y + ball_dy
+        if not game_pause:
+            # ball movement
+            ball_x = ball_x + ball_dx
+            ball_y = ball_y + ball_dy
 
-        # player 1 up movement
-        if player_1_move_up:
-            player_1_y -= 5
+            # player 1 up movement
+            if player_1_move_up:
+                player_1_y -= 5
+            else:
+                player_1_y += 0
+
+            # player 1 down movement
+            if player_1_move_down:
+                player_1_y += 5
+            else:
+                player_1_y += 0
+
+            # player 2 "Artificial Intelligence"
+            if player_2_y > ball_y:
+                player_2_y -= 4.8
+            elif player_2_y < ball_y:
+                player_2_y += 4.8
+
+            # player 1 collides with upper wall
+            if player_1_y <= 0:
+                player_1_y = 0
+
+            # player 1 collides with lower wall
+            elif player_1_y >= 720 - player_1_size :
+                player_1_y = 720 - player_1_size
+
+            # Player 2 collides with lower wall
+            if player_2_y <= 0:
+                player_2_y = 0
+
+            # player 2 collides with lower wall
+            elif player_2_y >= 720 - player_2_size:
+                player_2_y = 720 - player_2_size
+
+            # update score hud
+            score_text = score_font.render(str(score_1) + ' x ' + str(score_2), True, COLOR_WHITE, COLOR_BLACK)
+
+            # drawing objects
+            screen.blit(score_text, score_text_rect)
+            screen.blit(ball, (ball_x, ball_y))
+            screen.blit(player_1, (80, player_1_y))
+            screen.blit(player_2, (1180, player_2_y))
+            if not spawn_locked:
+                screen.blit(lucky_block, (lucky_block_x, lucky_block_y))
+
         else:
-            player_1_y += 0
-
-        # player 1 down movement
-        if player_1_move_down:
-            player_1_y += 5
-        else:
-            player_1_y += 0
-
-        # player 1 collides with upper wall
-        if player_1_y <= 0:
-            player_1_y = 0
-
-        # player 1 collides with lower wall
-        elif player_1_y >= 570:
-            player_1_y = 570
-
-        # player 2 "Artificial Intelligence"
-        if player_2_y > ball_y:
-            player_2_y -= 4.8
-        elif player_2_y < ball_y:
-            player_2_y += 4.8
-
-        if player_2_y <= 0:
-            player_2_y = 0
-        elif player_2_y >= 570:
-            player_2_y = 570
-
-        # update score hud
-        score_text = score_font.render(str(score_1) + ' x ' + str(score_2), True, COLOR_WHITE, COLOR_BLACK)
-
-        # drawing objects
-        screen.blit(score_text, score_text_rect)
-        screen.blit(ball, (ball_x, ball_y))
-        screen.blit(player_1, (80, player_1_y))
-        screen.blit(player_2, (1180, player_2_y))
-
-        if not spawn_locked:
-            screen.blit(lucky_block, (lucky_block_x, lucky_block_y))
+            screen.fill(COLOR_BLACK)
+            screen.blit(menu_text, menu_text_rect)
 
     else:
         # drawing victory
