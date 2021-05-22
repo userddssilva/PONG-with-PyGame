@@ -1,57 +1,60 @@
-import random
 import pygame
+import random
+
+# import constants
+from constants import COLOR_WHITE, COLOR_BLACK
+from constants import BOUNCE_SOUND, POINT_SOUND, COIN_SOUND, LOOSE_SOUND
+from constants import GAME_FONT
+from constants import SIZE, SCORE_MAX
+from constants import PLAYER_IMG, BALL_IMG, NERF_IMG, BUFFER_IMG, LUCKY_BLOCK_IMG
+
 pygame.init()
 
-COLOR_BLACK = (0, 0, 0)
-COLOR_WHITE = (255, 255, 255)
-
 # display Config
-SCORE_MAX = 5
-size = (1280, 720)
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("MyPong - PyGame Edition - 2021.05.18")
 
 # score text
-score_font = pygame.font.Font('assets/PressStart2P.ttf', 44)
+score_font = pygame.font.Font(GAME_FONT, 44)
 score_text = score_font.render('00 x 00', True, COLOR_WHITE, COLOR_BLACK)
 score_text_rect = score_text.get_rect()
 score_text_rect.center = (680, 50)
 
 # victory text
-victory_font = pygame.font.Font('assets/PressStart2P.ttf', 100)
+victory_font = pygame.font.Font(GAME_FONT, 100)
 victory_text = victory_font .render('VICTORY', True, COLOR_WHITE, COLOR_BLACK)
 victory_text_rect = score_text.get_rect()
 victory_text_rect.center = (450, 350)
 
 # Menu text
-menu_font = pygame.font.Font('assets/PressStart2P.ttf', 60)
+menu_font = pygame.font.Font(GAME_FONT, 60)
 menu_text = menu_font .render('Press SPACE', True, COLOR_WHITE, COLOR_BLACK)
 menu_text_rect = score_text.get_rect()
 menu_text_rect.center = (450, 350)
 
 
 # sound effects
-bounce_sound_effect = pygame.mixer.Sound('assets/bounce.wav')
-scoring_sound_effect = pygame.mixer.Sound('assets/point.wav')
-buff_sound_effect = pygame.mixer.Sound('assets/coin.wav')
-nerf_sound_effect = pygame.mixer.Sound('assets/loose.wav')
+bounce_sound_effect = pygame.mixer.Sound(BOUNCE_SOUND)
+scoring_sound_effect = pygame.mixer.Sound(POINT_SOUND)
+buff_sound_effect = pygame.mixer.Sound(COIN_SOUND)
+nerf_sound_effect = pygame.mixer.Sound(LOOSE_SOUND)
 
 # player 1
-player_1 = pygame.image.load("assets/player.png")
+player_1 = pygame.image.load(PLAYER_IMG)
 player_1_y = 300
 player_1_move_up = False
 player_1_move_down = False
 player_1_size = 150
 
 # player 2 - robot
-player_2 = pygame.image.load("assets/player.png")
+player_2 = pygame.image.load(PLAYER_IMG)
 player_2_y = 300
 player_2_size = 150
 
 # Lucky Block
 spawn_locked = True
 last_touch = 0
-lucky_block = pygame.image.load("assets/lucky_block.gif")
+lucky_block = pygame.image.load(LUCKY_BLOCK_IMG)
 lucky_block_x = 0
 lucky_block_y = 0
 buff_timer_player1 = 0
@@ -60,7 +63,7 @@ nerf_timer_player1 = 0
 nerf_timer_player2 = 0
 
 # ball
-ball = pygame.image.load("assets/ball.png")
+ball = pygame.image.load(BALL_IMG)
 ball_x = 640
 ball_y = 360
 ball_dx = 5
@@ -85,7 +88,7 @@ def end_buff(num_paddle):
     else:
         # Change sprite
         player_2_size = 150
-    return pygame.image.load("assets/player.png")
+    return pygame.image.load(PLAYER_IMG)
 
 
 while game_loop:
@@ -169,22 +172,22 @@ while game_loop:
                     buff_sound_effect.play()
                     if last_touch == 1:
                         player_1_size = 200
-                        player_1 = pygame.image.load("assets/player_buff.png")
+                        player_1 = pygame.image.load(BUFFER_IMG)
                         buff_timer_player1 = 30
                     else:
                         player_2_size = 200
-                        player_2 = pygame.image.load("assets/player_buff.png")
+                        player_2 = pygame.image.load(BUFFER_IMG)
                         buff_timer_player2 = 30
 
                 else:
                     nerf_sound_effect.play()
                     if last_touch == 1:
                         player_1_size = 90
-                        player_1 = pygame.image.load("assets/player_nerf.png")
+                        player_1 = pygame.image.load(NERF_IMG)
                         nerf_timer_player1 = 30
                     else:
                         player_2_size = 90
-                        player_2 = pygame.image.load("assets/player_nerf.png")
+                        player_2 = pygame.image.load(NERF_IMG)
                         nerf_timer_player2 = 30
 
         # ball collision with the player 1 's paddle
@@ -263,7 +266,7 @@ while game_loop:
                 player_1_y = 0
 
             # player 1 collides with lower wall
-            elif player_1_y >= 720 - player_1_size :
+            elif player_1_y >= 720 - player_1_size:
                 player_1_y = 720 - player_1_size
 
             # Player 2 collides with lower wall
@@ -275,7 +278,8 @@ while game_loop:
                 player_2_y = 720 - player_2_size
 
             # update score hud
-            score_text = score_font.render(str(score_1) + ' x ' + str(score_2), True, COLOR_WHITE, COLOR_BLACK)
+            score_text = score_font.render(str(score_1) + ' x ' + str(score_2),
+                                           True, COLOR_WHITE, COLOR_BLACK)
 
             # drawing objects
             screen.blit(score_text, score_text_rect)
