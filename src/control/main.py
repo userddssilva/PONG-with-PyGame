@@ -120,7 +120,6 @@ class ControlMain:
                 self.victory.victory('Player 2')
 
 
-
 if __name__ == '__main__':
     c = ControlMain()
     c.main()
