@@ -7,8 +7,8 @@ from src.constant import WIDTH, HEIGTH, BOUNCE_SOUND, POINT_SOUND
 class Ball:
     def __init__(self, x=(WIDTH / 2 - 15), y=(HEIGTH / 2 - 15)):
         self.obj = pygame.Rect(x, y, 30, 30)
-        self.speed_x = 2
-        self.speed_y = 2
+        self.speed_x = 7
+        self.speed_y = 7
         self.score_1 = 0
         self.score_2 = 0
 
